@@ -10,8 +10,13 @@ pytest src/test_agents.py -v        # 12 test
 
 Benchmark chạy ở **chế độ offline** (deterministic, không cần API key). Token được ước lượng bằng `ceil(len(text)/4)`.
 Cấu hình mặc định: `compact_threshold_tokens=1000`, `compact_keep_messages=4`, `profile_confidence_threshold=0.6`.
-Muốn chạy live (LangChain `create_agent` + `InMemorySaver` + `SummarizationMiddleware`), đặt `LAB_MODE=live` và cấu hình provider trong `.env` (xem `.env.example`).
-Chế độ live **chưa được kiểm thử với API thật** trong bài này; mọi số liệu dưới đây đều lấy từ chế độ offline.
+Muốn chạy live (LangChain `create_agent` + `InMemorySaver` + `SummarizationMiddleware`), cấu hình provider trong `.env` (xem `.env.example`) rồi chạy `python src/benchmark.py --live -v`. Cột `Response quality` khi đó được chấm bằng LLM judge (`judge_model`).
+
+Trạng thái chạy live với `openai / gpt-4o-mini`:
+- **Chạy thử ngắn thành công.** Baseline trả lời được trong cùng thread nhưng sang thread mới thì nói "không biết tên của bạn". Advanced ghi `User.md` và ở thread mới trả lời đúng: *"Bạn tên là DũngCT, nuôi một chú corgi tên Bơ và đồ uống yêu thích của bạn là cà phê sữa đá."*
+- **Benchmark đầy đủ chưa hoàn thành.** API trả lỗi `429 insufficient_quota` (tài khoản hết credit) ngay trong bộ Standard.
+
+Vì vậy mọi số liệu dưới đây đều lấy từ chế độ offline.
 
 ## 2. Kết quả benchmark
 
@@ -106,4 +111,4 @@ Baseline ở bài stress xử lý 21548 prompt tokens.
 ## 5. Giới hạn của bài làm
 - Token là ước lượng `len/4`, không phải tokenizer thật. Tiếng Việt có dấu thường tốn nhiều token hơn, nên số tuyệt đối sẽ khác nhưng tỉ lệ so sánh vẫn có ý nghĩa.
 - `Response quality` ở chế độ offline là heuristic: 70% độ bao phủ fact, 20% độ ngắn gọn, 10% không từ chối. Nó không đo độ tự nhiên của câu trả lời. Có thể thay bằng LLM judge (`judge_model` đã có trong config).
-- Câu trả lời offline mang tính template. Chế độ live dùng LLM thật, có tool đọc/ghi/sửa `User.md` và `SummarizationMiddleware` của LangChain, nhưng chưa được kiểm thử với API key thật.
+- Câu trả lời offline mang tính template. Chế độ live dùng LLM thật, có tool đọc/ghi/sửa `User.md` và `SummarizationMiddleware` của LangChain. Phần này mới được chạy thử ngắn; benchmark live đầy đủ chưa có số liệu vì hết credit API.
